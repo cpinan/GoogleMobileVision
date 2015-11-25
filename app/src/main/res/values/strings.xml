@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Google Mobile Vision</string>
+    <string name="action_settings">Settings</string>
+    <string name="low_storage_error">Error: Queda poca memoria.</string>
+    <string name="s_take_picture">Tomar Foto</string>
+    <string name="s_load_camera">Cargar camara</string>
+</resources>
