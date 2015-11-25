@@ -3,6 +3,7 @@ package com.carlospinan.googlemobilevision.views;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -31,6 +32,8 @@ public class FaceDetectionView extends View {
 
     private Bitmap bitmap;
     private SparseArray<Face> faces;
+    private Paint paintText;
+    private Resources resources;
 
     public FaceDetectionView(Context context) {
         this(context, null);
@@ -42,6 +45,12 @@ public class FaceDetectionView extends View {
 
     public FaceDetectionView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        if (!isInEditMode()) {
+            resources = context.getResources();
+            paintText = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paintText.setTextSize(resources.getDimensionPixelSize(R.dimen.faceTextSize));
+            paintText.setColor(0xFFFF0000);
+        }
     }
 
     /**
@@ -62,6 +71,7 @@ public class FaceDetectionView extends View {
         // enable it here in order to visualize detected landmarks.
         FaceDetector detector = new FaceDetector.Builder(getContext())
                 .setTrackingEnabled(false)
+                .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .setLandmarkType(FaceDetector.ALL_LANDMARKS)
                 .build();
 
@@ -143,11 +153,32 @@ public class FaceDetectionView extends View {
         paint.setStrokeWidth(5);
         for (int i = 0; i < faces.size(); ++i) {
             Face face = faces.valueAt(i);
+
+            int midPoint = 0;
+            int minY = Integer.MAX_VALUE;
             for (Landmark landmark : face.getLandmarks()) {
                 int cx = (int) (landmark.getPosition().x * scale);
                 int cy = (int) (landmark.getPosition().y * scale);
                 canvas.drawCircle(cx, cy, 10, paint);
+                midPoint += cx;
+                if (cy <= minY) {
+                    minY = cy;
+                }
             }
+
+            if (!face.getLandmarks().isEmpty()) {
+                midPoint /= face.getLandmarks().size();
+                String faceDetected = getContext().getString(R.string.s_face_detected);
+                String doNotSmile = getContext().getString(R.string.s_dont_smile);
+
+                float textWidth = paintText.measureText(faceDetected);
+                canvas.drawText(getContext().getString(R.string.s_face_detected), midPoint - textWidth * 0.5f, minY - 250, paintText);
+                if (face.getIsSmilingProbability() >= 0.5) {
+                    textWidth = paintText.measureText(doNotSmile);
+                    canvas.drawText(getContext().getString(R.string.s_dont_smile), midPoint - textWidth * 0.5f, minY - 150, paintText);
+                }
+            }
+
         }
     }
 

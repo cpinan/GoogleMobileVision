@@ -4,4 +4,6 @@
     <string name="low_storage_error">Error: Queda poca memoria.</string>
     <string name="s_take_picture">Tomar Foto</string>
     <string name="s_load_camera">Cargar camara</string>
+    <string name="s_face_detected">Rostro detectado</string>
+    <string name="s_dont_smile">No sonrias idiota</string>
 </resources>
