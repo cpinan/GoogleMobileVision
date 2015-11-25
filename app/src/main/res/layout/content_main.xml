@@ -21,13 +21,11 @@
 
     <Button
         android:id="@+id/loadCameraButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:padding="@dimen/activity_vertical_margin"
+        android:gravity="center"
         android:text="@string/s_load_camera" />
 
 </RelativeLayout>

@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.carlospinan.googlemobilevision.utils.Constants;
 import com.carlospinan.googlemobilevision.utils.Utils;
 
 import java.io.IOException;
@@ -20,8 +21,6 @@ import java.io.IOException;
 public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "CameraView";
-    private static final int ROTATION = 90;
-    private static final int PHOTO_MAX_SIZE = 1024;
 
     public interface CameraSurfaceListener {
         void onPictureTaken(Bitmap bitmap);
@@ -61,18 +60,17 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inJustDecodeBounds = true;
                     BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.length, options);
-                    options.inSampleSize = Utils.calculateInSampleSize(options, PHOTO_MAX_SIZE, PHOTO_MAX_SIZE);
+                    options.inSampleSize = Utils.calculateInSampleSize(options, Constants.PHOTO_MAX_SIZE, Constants.PHOTO_MAX_SIZE);
                     options.inJustDecodeBounds = false;
                     Matrix matrix = new Matrix();
                     matrix.postScale(-1, 1);
-                    matrix.postRotate(ROTATION);
+                    matrix.postRotate(Constants.ROTATION);
                     Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.length, options);
                     bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                     if (listener != null) {
                         listener.onPictureTaken(bitmap);
                     }
                     Log.d(TAG, "jpegCallback");
-                    stopCamera();
                 }
             };
             getHolder().addCallback(this);
@@ -100,7 +98,7 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
         try {
             isInPreview = true;
             camera = Camera.open(Camera.CameraInfo.CAMERA_FACING_FRONT);
-            camera.setDisplayOrientation(ROTATION);
+            camera.setDisplayOrientation(Constants.ROTATION);
             camera.setPreviewDisplay(getHolder());
             camera.startPreview();
         } catch (IOException e) {

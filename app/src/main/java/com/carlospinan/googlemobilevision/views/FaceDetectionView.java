@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.carlospinan.googlemobilevision.R;
 import com.carlospinan.googlemobilevision.patch.SafeFaceDetector;
+import com.carlospinan.googlemobilevision.utils.Constants;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
@@ -32,8 +33,9 @@ public class FaceDetectionView extends View {
 
     private Bitmap bitmap;
     private SparseArray<Face> faces;
-    private Paint paintText;
     private Resources resources;
+    private Paint paintText;
+    private Paint paintFace;
 
     public FaceDetectionView(Context context) {
         this(context, null);
@@ -50,6 +52,11 @@ public class FaceDetectionView extends View {
             paintText = new Paint(Paint.ANTI_ALIAS_FLAG);
             paintText.setTextSize(resources.getDimensionPixelSize(R.dimen.faceTextSize));
             paintText.setColor(0xFFFF0000);
+
+            paintFace = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paintFace.setColor(Color.BLUE);
+            paintFace.setStyle(Paint.Style.STROKE);
+            paintFace.setStrokeWidth(8);
         }
     }
 
@@ -73,6 +80,7 @@ public class FaceDetectionView extends View {
                 .setTrackingEnabled(false)
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+                .setMode(FaceDetector.FAST_MODE)
                 .build();
 
         // This is a temporary workaround for a bug in the face detector with respect to operating
@@ -154,28 +162,30 @@ public class FaceDetectionView extends View {
         for (int i = 0; i < faces.size(); ++i) {
             Face face = faces.valueAt(i);
 
-            int midPoint = 0;
-            int minY = Integer.MAX_VALUE;
+            float left = (float) (face.getPosition().x * scale);
+            float top = (float) (face.getPosition().y * scale);
+            float right = left + (float) (face.getWidth() * scale);
+            float bottom = top + (float) (face.getHeight() * scale);
+
+            canvas.drawRect(left, top, right, bottom, paintFace);
+
             for (Landmark landmark : face.getLandmarks()) {
                 int cx = (int) (landmark.getPosition().x * scale);
                 int cy = (int) (landmark.getPosition().y * scale);
                 canvas.drawCircle(cx, cy, 10, paint);
-                midPoint += cx;
-                if (cy <= minY) {
-                    minY = cy;
-                }
             }
 
             if (!face.getLandmarks().isEmpty()) {
-                midPoint /= face.getLandmarks().size();
+                float midPoint = (left + right) / 2;
+                float yPosition = top;
                 String faceDetected = getContext().getString(R.string.s_face_detected);
                 String doNotSmile = getContext().getString(R.string.s_dont_smile);
 
                 float textWidth = paintText.measureText(faceDetected);
-                canvas.drawText(getContext().getString(R.string.s_face_detected), midPoint - textWidth * 0.5f, minY - 250, paintText);
-                if (face.getIsSmilingProbability() >= 0.5) {
+                canvas.drawText(getContext().getString(R.string.s_face_detected), midPoint - textWidth * 0.5f, yPosition + 50, paintText);
+                if (face.getIsSmilingProbability() >= Constants.SMILE_PROBABILITY) {
                     textWidth = paintText.measureText(doNotSmile);
-                    canvas.drawText(getContext().getString(R.string.s_dont_smile), midPoint - textWidth * 0.5f, minY - 150, paintText);
+                    canvas.drawText(getContext().getString(R.string.s_dont_smile), midPoint - textWidth * 0.5f, yPosition + 150, paintText);
                 }
             }
 
